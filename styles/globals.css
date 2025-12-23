@@ -34,13 +34,14 @@ table {
 
 table.main td {
   border: 1px solid #aaa;
-  padding: 1em;
+  padding: 1rem;
 }
 
 table.bmp th
 {
   vertical-align: bottom;
   text-align: center;
+  font-size: .85em;
 }
 
 table.bmp td
