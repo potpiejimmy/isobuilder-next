@@ -1,78 +1,156 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { useState } from 'react';
+import Paper from '@mui/material/Paper';
+import TextField from '@mui/material/TextField';
 
 export default function Home() {
+  const [hexValue, setHexValue] = useState('01000000000000000000');
+  const [messageType, setMessageType] = useState('0100');
+
+  // EBCDIC encoding table for common ASCII characters
+  const asciiToEbcdic: { [key: string]: string } = {
+    ' ': '40', '!': '5A', '"': '7F', '#': '7B', '$': '5B', '%': '6C', '&': '50',
+    "'": '7D', '(': '4D', ')': '5D', '*': '5C', '+': '4E', ',': '6B', '-': '60',
+    '.': '4B', '/': '61', '0': 'F0', '1': 'F1', '2': 'F2', '3': 'F3', '4': 'F4',
+    '5': 'F5', '6': 'F6', '7': 'F7', '8': 'F8', '9': 'F9', ':': '7A', ';': '5E',
+    '<': '4C', '=': '7E', '>': '6E', '?': '6F', '@': '7C', 'A': 'C1', 'B': 'C2',
+    'C': 'C3', 'D': 'C4', 'E': 'C5', 'F': 'C6', 'G': 'C7', 'H': 'C8', 'I': 'C9',
+    'J': 'D1', 'K': 'D2', 'L': 'D3', 'M': 'D4', 'N': 'D5', 'O': 'D6', 'P': 'D7',
+    'Q': 'D8', 'R': 'D9', 'S': 'E2', 'T': 'E3', 'U': 'E4', 'V': 'E5', 'W': 'E6',
+    'X': 'E7', 'Y': 'E8', 'Z': 'E9', '[': 'BA', '\\': 'E0', ']': 'BB', '^': '5F',
+    '_': '6D', '`': '79', 'a': '81', 'b': '82', 'c': '83', 'd': '84', 'e': '85',
+    'f': '86', 'g': '87', 'h': '88', 'i': '89', 'j': '91', 'k': '92', 'l': '93',
+    'm': '94', 'n': '95', 'o': '96', 'p': '97', 'q': '98', 'r': '99', 's': 'A2',
+    't': 'A3', 'u': 'A4', 'v': 'A5', 'w': 'A6', 'x': 'A7', 'y': 'A8', 'z': 'A9',
+    '{': 'C0', '|': '4F', '}': 'D0', '~': 'A1'
+  };
+
+  const convertToEbcdic = (char: string): string => {
+    return asciiToEbcdic[char] || '3F'; // '3F' is EBCDIC for '?' (unknown char)
+  };
+
+  const parseAndConvertPastedString = (pastedText: string): string => {
+    // If the pasted text is already a plain hexadecimal string, return it as-is
+    if (/^[0-9A-Fa-f]+$/.test(pastedText)) {
+      return pastedText.toUpperCase();
+    }
+
+    let result = '';
+    let i = 0;
+
+    while (i < pastedText.length) {
+      // Check if we're at the start of a hex block <0x...>
+      if (pastedText[i] === '<' && pastedText.substring(i, i + 3) === '<0x') {
+        // Find the closing >
+        const closeIndex = pastedText.indexOf('>', i);
+        if (closeIndex !== -1) {
+          // Extract hex value between <0x and >
+          const hexBlock = pastedText.substring(i + 3, closeIndex);
+          // Validate it's actually hex
+          if (/^[0-9A-Fa-f]+$/.test(hexBlock)) {
+            result += hexBlock;
+            i = closeIndex + 1;
+            continue;
+          }
+        }
+      }
+      
+      // Regular character - convert to EBCDIC
+      const char = pastedText[i];
+      result += convertToEbcdic(char);
+      i++;
+    }
+
+    return result.toUpperCase();
+  };
+
+  const handleHexChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    // Only allow hexadecimal characters (0-9, A-F, a-f)
+    if (/^[0-9A-Fa-f]*$/.test(value)) {
+      setHexValue(value);
+      // Update message type from first 4 characters
+      setMessageType(value.substring(0, 4).padEnd(4, '0'));
+    }
+  };
+
+  const handleMessageTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    // Only allow digits 0-9 and max 4 characters
+    if (/^[0-9]*$/.test(value) && value.length <= 4) {
+      const paddedValue = value.padEnd(4, '0');
+      setMessageType(value);
+      // Update hexValue with new message type
+      setHexValue(paddedValue + hexValue.substring(4));
+    }
+  };
+
+  const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    const pastedText = event.clipboardData.getData('text');
+    console.log("Pasted text:", pastedText);
+
+    // Convert the pasted text to pure hex
+    const convertedHex = parseAndConvertPastedString(pastedText);
+    console.log("Converted to hex:", convertedHex);
+
+    // Get current cursor position
+    const target = event.target as HTMLInputElement;
+    const start = target.selectionStart || 0;
+    const end = target.selectionEnd || 0;
+
+    // Insert converted hex at cursor position
+    const newValue = hexValue.substring(0, start) + convertedHex + hexValue.substring(end);
+    setHexValue(newValue);
+    // Update message type from first 4 characters
+    setMessageType(newValue.substring(0, 4).padEnd(4, '0'));
+  };
+
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black`}
-    >
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the index.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <div className="flex flex-col gap-5 m-5">
+        <Paper>
+          <div className="p-5 flex flex-col gap-3">
+            <h1 className="text-xl font-bold">ISO 8583 Message</h1>
+            <TextField 
+              id="outlined-basic" 
+              className="w-full" 
+              label="HEX" 
+              variant="outlined" 
+              value={hexValue}
+              onChange={handleHexChange}
+              onPaste={handlePaste}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs/pages/getting-started?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            <span className='text-sm text-gray-500'>Hint: You can paste ASCII text with embedded hex blocks like &lt;0x1A3F&gt; and it will convert to EBCDIC hex.</span>
+            Length: {hexValue.length / 2} bytes
+          </div>
+        </Paper>
+        <Paper>
+          <div className="p-5 flex flex-col gap-3">
+            <h1 className="text-xl font-bold">Message Editor</h1>
+            <table className="main">
+              <tbody>
+                <tr>
+                  <td>Message Type</td>
+                  <td>
+                    <TextField 
+                      variant='standard'
+                      value={messageType}
+                      onChange={handleMessageTypeChange}
+                      slotProps={{
+                        htmlInput: {
+                          maxLength: 4,
+                          pattern: '[0-9]*'
+                        }
+                      }}
+                      placeholder="0000"
+                      sx={{ width: '3rem' }}
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </Paper>
+        <Paper><div className="p-5">ISO 8583 Message Builder and Parser</div></Paper>
     </div>
   );
 }

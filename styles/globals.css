@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #eeeeee;
   --foreground: #171717;
 }
 
@@ -12,15 +12,58 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* --- from isobuilder --- */
+
+table {
+  border-spacing: 0px;
+  border-collapse: collapse;
+}
+
+table.main td {
+  border: 1px solid #aaa;
+  padding: 1em;
+}
+
+table.bmp th
+{
+  vertical-align: bottom;
+  text-align: center;
+}
+
+table.bmp td
+{
+  border: none;
+  padding: 0;
+}
+
+table.bmp th span 
+{
+  -ms-writing-mode: tb-rl;
+  -webkit-writing-mode: vertical-rl;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+#versionfooter {
+  float: right;
+  margin-right: 1em;
+  font-size: 0.75em;
+}
+
+.footer {
+  font-size: 0.9em;
 }
