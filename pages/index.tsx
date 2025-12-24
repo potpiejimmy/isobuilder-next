@@ -74,7 +74,7 @@ export default function Home() {
         <Paper>
           <div className="p-5 flex flex-col gap-2">
             <h1 className="text-xl font-bold">Message Editor</h1>
-            <table className="main">
+            <table className="border-collapse main">
               <tbody>
                 <tr>
                   <td>Message Type</td>
@@ -97,9 +97,17 @@ export default function Home() {
                 <tr>
                   <td>BMP 0<br/>Primary BMP</td>
                   <td>
-                    <BmpComponent selectedValues={bmp0}></BmpComponent>
+                    <BmpComponent selectedValues={bmp0} onChange={setBmp0}></BmpComponent>
                   </td>
                 </tr>
+                {bmp0.map(no => (
+                  <tr key={`bmp-${no}`}>
+                    {no === 1 && <td>BMP 1<br/>Secondary BMP</td>}
+                    {no === 1 && <td><BmpComponent selectedValues={bmp1} onChange={setBmp1}></BmpComponent></td>}
+                    {no > 1 && <td>{no}</td>}
+                    {no > 1 && <td></td>}
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

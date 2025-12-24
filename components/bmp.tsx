@@ -36,6 +36,7 @@ export const BmpComponent: React.FC<BmpProps> = ({
     
     newSelectedValues.sort((a, b) => a - b);
     setSelectedValues(newSelectedValues);
+    console.log("Selected bitmap values:", newSelectedValues);
     
     if (onChange) {
       onChange(newSelectedValues);
@@ -43,12 +44,12 @@ export const BmpComponent: React.FC<BmpProps> = ({
   };
 
   return (
-    <table className="bmp">
+    <table className="border-collapse">
       <thead>
         <tr>
           {bitmap.map((i) => (
-            <th key={`header-${i}`}>
-              <span>{i}</span>
+            <th key={`header-${i}`} className="align-bottom text-center text-[0.85em]">
+              <span className="[writing-mode:vertical-rl] rotate-180 whitespace-nowrap inline-block">{i}</span>
             </th>
           ))}
         </tr>
@@ -56,7 +57,7 @@ export const BmpComponent: React.FC<BmpProps> = ({
       <tbody>
         <tr>
           {bitmap.map((i) => (
-            <td key={`cell-${i}`}>
+            <td key={`cell-${i}`} className="border-none p-0 text-center">
               <input
                 type="checkbox"
                 name="groupname"

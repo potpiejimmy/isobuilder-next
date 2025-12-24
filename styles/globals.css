@@ -25,46 +25,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* --- from isobuilder --- */
-
-table {
-  border-spacing: 0px;
-  border-collapse: collapse;
-}
-
-table.main td {
-  border: 1px solid #aaa;
-  padding: 1rem;
-}
-
-table.bmp th
-{
-  vertical-align: bottom;
-  text-align: center;
-  font-size: .85em;
-}
-
-table.bmp td
-{
-  border: none;
-  padding: 0;
-}
-
-table.bmp th span 
-{
-  -ms-writing-mode: tb-rl;
-  -webkit-writing-mode: vertical-rl;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  white-space: nowrap;
-}
-
-#versionfooter {
-  float: right;
-  margin-right: 1em;
-  font-size: 0.75em;
-}
-
-.footer {
-  font-size: 0.9em;
+table.main > tbody > tr > td {
+  @apply border border-[#aaa] p-4;
 }
