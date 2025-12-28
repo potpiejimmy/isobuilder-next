@@ -55,7 +55,7 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
 
   const mask = (): string => {
     if (!def) return '';
-    return 'aa'.repeat(len);
+    return 'aa'.repeat(len());
   };
 
   const lengthField = (): string => {
