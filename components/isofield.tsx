@@ -1,5 +1,6 @@
 import TextField from '@mui/material/TextField';
 import React, { useState, useEffect } from 'react';
+import HexTextField from './hextextfield';
 
 interface IsoFieldProps {
   def?: any;
@@ -17,7 +18,7 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
   onChange 
 }) => {
   const [_val, setVal] = useState<string>('');
-  const [_parsing, setParsing] = useState<boolean>(false);
+//  const [_parsing, setParsing] = useState<boolean>(false);
 
   // EBCDIC conversion table
   const e2a = [
@@ -41,7 +42,7 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
 
   // Initialize value from init prop
   useEffect(() => {
-    if (_parsing) return;
+//    if (_parsing) return;
     let v = '';
     if (init) {
       v = init;
@@ -51,7 +52,7 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
       }
     }
     setVal(v);
-    setTimeout(() => emitVal(v), 0);
+    //emitVal(v);
   }, [init, def]);
 
   const mask = (): string => {
@@ -59,9 +60,9 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
     return '00'.repeat(len());
   };
 
-  const lengthField = (): string => {
+  const lengthField = (val: string): string => {
     if (!def || !def.lenlen) return '';
-    const fieldLen = _val ? Math.round(_val.length / 2) : 0;
+    const fieldLen = val ? Math.round(val.length / 2) : 0;
     const lens = ('' + (Math.pow(10, def.lenlen) + fieldLen)).substr(1);
     return 'F' + lens.split('').join('F');
   };
@@ -76,7 +77,7 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
   };
 
   const emitVal = (v: string) => {
-    let e = lengthField();
+    let e = lengthField(v);
     e += v.replace(/_/g, '');
     if (e.length % 2) e += '0';
     if (len()) {
@@ -87,12 +88,11 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setParsing(true);
-    const newVal = e.target.value;
+  const handleChange = (newVal: string) => {
+    //setParsing(true);
     setVal(newVal);
     emitVal(newVal);
-    setTimeout(() => setParsing(false), 500);
+    //setTimeout(() => setParsing(false), 500);
   };
 
   // Utility functions
@@ -134,37 +134,23 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
   return (
     <div className="iso-field">
       {len() > 0 && (
-        <TextField variant='standard' 
-          sx={{ width: (len() * 2 + 2) + 'ch' }}
+        <HexTextField variant='standard' 
           value={_val}
           onChange={handleChange}
-          slotProps={{
-            htmlInput: {
-              maxLength: len() * 2,
-              pattern: '[A-Fa-f0-9]*'
-            }
-          }}
+          maxLength={len() * 2}
           placeholder={mask()}
-          style={{ fontFamily: 'monospace' }}
         />
       )}
       
       {def && def.lenlen && (
         <div className='flex flex-row gap-1 items-center'>
-          <div>{lengthField()}</div>
-          <TextField variant='standard' 
-            sx={{ width: 100 + 'ch' }}
+          <div className='font-[monospace] text-sm'>{lengthField(_val)}</div>
+          <HexTextField variant='standard' 
             value={_val}
             onChange={handleChange}
-            slotProps={{
-              htmlInput: {
-                pattern: '[A-Fa-f0-9]*'
-              }
-            }}
             placeholder="Enter hex"
-            style={{ fontFamily: 'monospace' }}
           />
-          {_val.length % 2 === 1 && <span> 0</span>}
+          {_val.length % 2 === 1 && <span className='font-[monospace] text-sm'> 0</span>}
         </div>
       )}
       

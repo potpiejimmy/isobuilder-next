@@ -36,7 +36,7 @@ export const BmpComponent: React.FC<BmpProps> = ({
     
     newSelectedValues.sort((a, b) => a - b);
     setSelectedValues(newSelectedValues);
-    console.log("Selected bitmap values:", newSelectedValues);
+//    console.log("Selected bitmap values:", newSelectedValues);
     
     if (onChange) {
       onChange(newSelectedValues);
