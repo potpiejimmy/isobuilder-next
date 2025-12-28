@@ -79,18 +79,14 @@ export default function Home() {
                 <tr>
                   <td>Message Type</td>
                   <td>
-                    <TextField 
-                      variant='standard'
-                      value={messageType}
-                      onChange={handleMessageTypeChange}
+                    <TextField variant='standard' value={messageType} onChange={handleMessageTypeChange}
                       slotProps={{
                         htmlInput: {
                           maxLength: 4,
                           pattern: '[0-9]*'
                         }
                       }}
-                      placeholder="0000"
-                      sx={{ width: '3rem' }}
+                      placeholder="0000" sx={{ width: '3rem' }}
                     />
                   </td>
                 </tr>
@@ -102,10 +98,14 @@ export default function Home() {
                 </tr>
                 {bmp0.map(no => (
                   <tr key={`bmp-${no}`}>
-                    {no === 1 && <td>BMP 1<br/>Secondary BMP</td>}
-                    {no === 1 && <td><BmpComponent selectedValues={bmp1} onChange={setBmp1}></BmpComponent></td>}
-                    {no > 1 && <td>{no}</td>}
-                    {no > 1 && <td></td>}
+                    {no === 1 && <>
+                      <td>BMP 1<br/>Secondary BMP</td>
+                      <td><BmpComponent selectedValues={bmp1} onChange={setBmp1}></BmpComponent></td>
+                    </>}
+                    {no > 1 && <>
+                      <td>{no}</td>
+                      <td></td>
+                    </>}
                   </tr>
                 ))}
               </tbody>
