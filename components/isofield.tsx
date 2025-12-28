@@ -1,3 +1,4 @@
+import TextField from '@mui/material/TextField';
 import React, { useState, useEffect } from 'react';
 
 interface IsoFieldProps {
@@ -5,7 +6,7 @@ interface IsoFieldProps {
   no?: number;
   emv?: boolean;
   init?: string;
-  onChange?: (data: { no: number | undefined; val: string }) => void;
+  onChange?: (data: { no: number; val: string }) => void;
 }
 
 export const IsoFieldComponent: React.FC<IsoFieldProps> = ({ 
@@ -55,14 +56,14 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
 
   const mask = (): string => {
     if (!def) return '';
-    return 'aa'.repeat(len());
+    return '00'.repeat(len());
   };
 
   const lengthField = (): string => {
     if (!def || !def.lenlen) return '';
     const fieldLen = _val ? Math.round(_val.length / 2) : 0;
     const lens = ('' + (Math.pow(10, def.lenlen) + fieldLen)).substr(1);
-    return 'f' + lens.split('').join('f');
+    return 'F' + lens.split('').join('F');
   };
 
   const len = (): number => {
@@ -82,7 +83,7 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
       while (e.length < len() * 2) e += def.alpha ? '40' : '00';
     }
     if (onChange) {
-      onChange({ no, val: e });
+      onChange({ no: no!, val: e });
     }
   };
 
@@ -133,27 +134,33 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
   return (
     <div className="iso-field">
       {len() > 0 && (
-        <input
-          type="text"
-          size={len() * 2 + 2}
+        <TextField variant='standard' 
+          sx={{ width: (len() * 2 + 2) + 'ch' }}
           value={_val}
           onChange={handleChange}
-          maxLength={len() * 2}
-          pattern="[A-Fa-f0-9]*"
+          slotProps={{
+            htmlInput: {
+              maxLength: len() * 2,
+              pattern: '[A-Fa-f0-9]*'
+            }
+          }}
           placeholder={mask()}
           style={{ fontFamily: 'monospace' }}
         />
       )}
       
       {def && def.lenlen && (
-        <div>
-          {lengthField()}
-          <input
-            type="text"
-            size={100}
+        <div className='flex flex-row gap-1 items-center'>
+          <div>{lengthField()}</div>
+          <TextField variant='standard' 
+            sx={{ width: 100 + 'ch' }}
             value={_val}
             onChange={handleChange}
-            pattern="[A-Fa-f0-9]*"
+            slotProps={{
+              htmlInput: {
+                pattern: '[A-Fa-f0-9]*'
+              }
+            }}
             placeholder="Enter hex"
             style={{ fontFamily: 'monospace' }}
           />

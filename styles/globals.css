@@ -26,5 +26,5 @@ body {
 }
 
 table.main > tbody > tr > td {
-  @apply border border-[#aaa] p-4;
+  @apply border border-[#aaa] p-2;
 }
