@@ -1,26 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import TextField, { TextFieldProps } from '@mui/material/TextField';
 
-interface HexTextFieldProps extends Omit<TextFieldProps, 'onChange' | 'value'> {
+interface IsoTextFieldProps extends Omit<TextFieldProps, 'onChange' | 'value'> {
   maxLength?: number;
   value?: string;
-  emitImmediate?: boolean;
+  fullWidth?: boolean;
   onChange?: (value: string) => void;
 }
 
-const HexTextField: React.FC<HexTextFieldProps> = ({ 
+const IsoTextField: React.FC<IsoTextFieldProps> = ({ 
   maxLength, 
   onChange,
   value,
-  emitImmediate = false,
+  fullWidth = false,
   ...otherProps 
 }) => {
-  const [localValue, setLocalValue] = useState(value || '');
-
-  // Sync local value with external value prop
-  useEffect(() => {
-    setLocalValue(value || '');
-  }, [value]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let newValue = event.target.value;
@@ -36,28 +30,17 @@ const HexTextField: React.FC<HexTextFieldProps> = ({
       newValue = newValue.slice(0, maxLength);
     }
     
-    // Update local state
-    setLocalValue(newValue);
-    
     // Emit immediately if configured
-    if (emitImmediate && onChange) {
+    if (onChange) {
       onChange(newValue);
-    }
-  };
-
-  const handleBlur = () => {
-    // Emit value to parent only when losing focus (if not emitting immediately)
-    if (!emitImmediate && onChange) {
-      onChange(localValue);
     }
   };
 
   return (
     <TextField
       {...otherProps}
-      value={localValue}
+      value={value}
       onChange={handleChange}
-      onBlur={handleBlur}
       slotProps={{
         ...otherProps.slotProps,
         htmlInput: {
@@ -67,7 +50,7 @@ const HexTextField: React.FC<HexTextFieldProps> = ({
       }}
       sx={{
         ...otherProps.sx,
-        width: `${maxLength ? maxLength+1 : 100}ch`,
+        width: fullWidth ? '100%' : `${maxLength ? maxLength+2  : 100}ch`,
         '& input': {
           fontFamily: 'monospace',
         },
@@ -76,4 +59,4 @@ const HexTextField: React.FC<HexTextFieldProps> = ({
   );
 };
 
-export default HexTextField;
+export default IsoTextField;

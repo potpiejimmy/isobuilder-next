@@ -4,7 +4,8 @@ import TextField from '@mui/material/TextField';
 import { parseAndConvertPastedString } from '../utils/ebcdic';
 import { BmpComponent } from '@/components/bmp';
 import IsoFieldComponent from '@/components/isofield';
-import HexTextField from '@/components/hextextfield';
+import HexTextField from '@/components/isotextfield';
+import { Alert } from '@mui/material';
 
 export default function Home() {
   const [hexValue, setHexValue] = useState('01000000000000000000');
@@ -12,6 +13,7 @@ export default function Home() {
   const [bmp0, setBmp0] = useState<number[]>([]);
   const [bmp1, setBmp1] = useState<number[]>([]);
   const [bmps, setBmps] = useState<Record<number,string>>({});
+  const [alert, setAlert] = useState<{severity: 'success' | 'info' | 'warning' | 'error', summary: string, detail: string} | null>(null);
 
   const isodef: Record<number, {label: string, lenlen?: number, len?: number, len_emv?: number, alpha_emv?: boolean, alpha?: boolean}> = {
      2: {label:"TRACK2PAN", lenlen:2},
@@ -69,7 +71,7 @@ export default function Home() {
   }
 
   const emv = (): boolean => { // EMV AKZ ...3 or international (ECI)
-    return (bmps[3] && bmps[3].endsWith('3')) || !!(messageType && messageType.startsWith('01'));
+    return (bmps[3] &&bmps[3].length===6 && bmps[3].endsWith('3')) || !!(messageType && messageType.startsWith('01'));
   }
 
   const bitmapToHex = (bmp: number[], offset=0) => {
@@ -89,28 +91,36 @@ export default function Home() {
     return bmp;
   }
 
+  const padField = (val: string, no: number): string => {
+    let def = isodef[no];
+    let e = val || '';
+    if (e.length % 2) e += '0';
+    if (lenOf(no)) {
+       while (e.length < lenOf(no) * 2) e += '00';
+    }
+    return e;
+  }
+
   const build = (useBmp0?: number[], useBmp1?: number[], useBmps?: Record<number,string>) => {
     const currentBmp0 = useBmp0 ?? bmp0;
     const currentBmp1 = useBmp1 ?? bmp1;
     const currentBmps = useBmps ?? bmps;
-    //if (this._parsing) return;
     let res = messageType;
     res += bitmapToHex(currentBmp0);
     if (currentBmp0[0]==1) res += bitmapToHex(currentBmp1,64);
     for (let i in currentBmp0) {
-      if (currentBmp0[i]>1 && currentBmps[currentBmp0[i]]) res += currentBmps[currentBmp0[i]];
+      if (currentBmp0[i]>1) res += padField(currentBmps[currentBmp0[i]],currentBmp0[i]);
     }
     if (currentBmp0[0]==1) {
       for (let i in currentBmp1) {
-        if (currentBmps[currentBmp1[i]]) res += currentBmps[currentBmp1[i]];
+        res += padField(currentBmps[currentBmp1[i]],currentBmp1[i]);
       }
     }
     setHexValue(res);
-    //this.msgs = [];
+    setAlert(null);
   }
 
   const parse = (msg: string) => {
-    //this._parsing = true;
     let offset = 0;
     setMessageType(msg.substr(offset,4));
     offset += 4;
@@ -136,13 +146,12 @@ export default function Home() {
     } else {
       setBmp1([]);
     }
-    //this.msgs = [];
-    //if (offset != msg.length) {
-    //  this.msgs.push({severity:'error', summary:'Invalid message', detail:'Invalid message length, expected length is '+offset/2});
-    //} else {
-    //  this.msgs.push({severity:'success', summary:'Message okay', detail:'Message successfully parsed'});
-    //}
-    //setTimeout(()=>this._parsing = false, 500);
+    setAlert(null);
+    if (offset != msg.length) {
+     setAlert({severity:'error', summary:'Invalid message', detail:'Invalid message length, expected length is '+offset/2});
+    } else {
+     setAlert({severity:'success', summary:'Message okay', detail:'Message successfully parsed'});
+    }
   }
 
   const parseField = (msg: string, offset: number, no: number) => {
@@ -156,6 +165,12 @@ export default function Home() {
     offset += len*2;
     return offset;
   }
+
+  const lenOf = (no: number): number => {
+    let def = isodef[no];
+    if (!def || !def.len) return 0;
+    return emv() && def.len_emv ? def.len_emv : def.len;
+  };
 
   const bmpChange = (event: { no: number; val: string }) => {
     bmps[event.no] = event.val;
@@ -202,17 +217,20 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-3 m-5">
+        {alert && <Alert severity={alert.severity}>
+          <strong>{alert.summary}:</strong> {alert.detail}
+        </Alert>}
         <Paper>
           <div className="p-5 flex flex-col gap-2">
             <h1 className="text-xl font-bold">ISO 8583 Message</h1>
             <HexTextField
               className="w-full" 
               label="HEX" 
+              fullWidth={true}
               variant="outlined" 
               value={hexValue}
               onChange={handleHexChange}
               onPaste={handlePaste}
-              emitImmediate={true}
             />
             <span className='text-sm text-gray-500'>Hint: You can paste ASCII text with embedded hex blocks like &lt;0x1A3F&gt; and it will convert to EBCDIC hex.</span>
             Length: {hexValue.length / 2} bytes
@@ -245,9 +263,18 @@ export default function Home() {
                       <td><BmpComponent startNo={65} selectedValues={bmp1} onChange={b1=>{setBmp1(b1);build(undefined, b1);}}></BmpComponent></td>
                     </>}
                     {no > 1 && <>
-                      <td className='text-sm'>BMP {no}<br/>{fieldLabel(no)}</td>
+                      <td className='text-sm'>
+                        BMP {no}<br/>{fieldLabel(no)}
+                        {no===3 && emv() && <div><img width="32" src="/emvchip.png"/></div>}
+                      </td>
                       <td><IsoFieldComponent init={bmps[no]} no={no} def={isodef[no]} emv={emv()} onChange={bmpChange}></IsoFieldComponent></td>
                     </>}
+                  </tr>
+                ))}
+                {bmp1.map(no => (
+                  <tr key={`bmp-${no}`}>
+                    <td className='text-sm'>BMP {no}<br/>{fieldLabel(no)}</td>
+                    <td><IsoFieldComponent init={bmps[no]} no={no} def={isodef[no]} emv={emv()} onChange={bmpChange}></IsoFieldComponent></td>
                   </tr>
                 ))}
               </tbody>

@@ -1,6 +1,6 @@
 import TextField from '@mui/material/TextField';
 import React, { useState, useEffect } from 'react';
-import HexTextField from './hextextfield';
+import IsoTextField from './isotextfield';
 
 interface IsoFieldProps {
   def?: any;
@@ -77,12 +77,7 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
   };
 
   const emitVal = (v: string) => {
-    let e = lengthField(v);
-    e += v.replace(/_/g, '');
-    if (e.length % 2) e += '0';
-    if (len()) {
-      while (e.length < len() * 2) e += def.alpha ? '40' : '00';
-    }
+    let e = lengthField(v) + v;
     if (onChange) {
       onChange({ no: no!, val: e });
     }
@@ -134,7 +129,7 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
   return (
     <div className="iso-field">
       {len() > 0 && (
-        <HexTextField variant='standard' 
+        <IsoTextField variant='standard' 
           value={_val}
           onChange={handleChange}
           maxLength={len() * 2}
@@ -145,7 +140,7 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
       {def && def.lenlen && (
         <div className='flex flex-row gap-1 items-center'>
           <div className='font-[monospace] text-sm'>{lengthField(_val)}</div>
-          <HexTextField variant='standard' 
+          <IsoTextField variant='standard' 
             value={_val}
             onChange={handleChange}
             placeholder="Enter hex"
