@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import Paper from '@mui/material/Paper';
-import TextField from '@mui/material/TextField';
 import { parseAndConvertPastedString } from '../utils/ebcdic';
 import { BmpComponent } from '@/components/bmp';
 import IsoFieldComponent from '@/components/isofield';
@@ -265,7 +264,7 @@ export default function Home() {
                     {no > 1 && <>
                       <td className='text-sm'>
                         BMP {no}<br/>{fieldLabel(no)}
-                        {no===3 && emv() && <div><img width="32" src="/emvchip.png"/></div>}
+                        {no===3 && emv() && <div><img width="32" src="emvchip.png"/></div>}
                       </td>
                       <td><IsoFieldComponent init={bmps[no]} no={no} def={isodef[no]} emv={emv()} onChange={bmpChange}></IsoFieldComponent></td>
                     </>}
