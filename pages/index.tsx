@@ -69,8 +69,10 @@ export default function Home() {
     return isodef[no] ? isodef[no].label : '<unknown>';
   }
 
-  const emv = (): boolean => { // EMV AKZ ...3 or international (ECI)
-    return (bmps[3] &&bmps[3].length===6 && bmps[3].endsWith('3')) || !!(messageType && messageType.startsWith('01'));
+  const emv = (useBmp3?: string, useMessageType?: string): boolean => { // EMV AKZ ...3 or international (ECI)
+    const currentBmp3 = useBmp3 ?? bmps[3];
+    const currentMessageType = useMessageType ?? messageType;
+    return (currentBmp3 && currentBmp3.length===6 && currentBmp3.endsWith('3')) || !!(currentMessageType && currentMessageType.startsWith('01'));
   }
 
   const bitmapToHex = (bmp: number[], offset=0) => {
@@ -123,28 +125,33 @@ export default function Home() {
     let offset = 0;
     setMessageType(msg.substr(offset,4));
     offset += 4;
-    setBmp0(hexToBitmap(msg.substr(offset,16)));
+    let currentBmp0 = hexToBitmap(msg.substr(offset,16));
+    let currentBmp1: number[] = [];
+    setBmp0(currentBmp0);
     offset += 16;
-    if (bmp0[0]==1) {
-      setBmp1(hexToBitmap(msg.substr(offset,16), 64));
+    if (currentBmp0[0]==1) {
+      currentBmp1 = hexToBitmap(msg.substr(offset,16), 64);
+      setBmp1(currentBmp1);
       offset += 16;
     }
-    for (let i in bmp0) {
-      let no = bmp0[i];
+    let parsedBmps: Record<number,string> = {};
+    for (let i in currentBmp0) {
+      let no = currentBmp0[i];
       if (no>1 && isodef[no]) {
-        offset = parseField(msg, offset, no);
+        offset = parseField(msg, offset, no, parsedBmps);
       }
     }
-    if (bmp0[0]==1) {
-      for (let i in bmp1) {
-        let no = bmp1[i];
+    if (currentBmp0[0]==1) {
+      for (let i in currentBmp1) {
+        let no = currentBmp1[i];
         if (isodef[no]) {
-          offset = parseField(msg, offset, no);
+          offset = parseField(msg, offset, no, parsedBmps);
         }
       }
     } else {
       setBmp1([]);
     }
+    setBmps(parsedBmps);
     setAlert(null);
     if (offset != msg.length) {
      setAlert({severity:'error', summary:'Invalid message', detail:'Invalid message length, expected length is '+offset/2});
@@ -153,14 +160,14 @@ export default function Home() {
     }
   }
 
-  const parseField = (msg: string, offset: number, no: number) => {
-    let len = emv() && isodef[no].len_emv ? isodef[no].len_emv! : isodef[no].len!;
+  const parseField = (msg: string, offset: number, no: number, parsedBmps: Record<number,string>) => {
+    let len = emv(parsedBmps[3], msg.substr(offset,4)) && isodef[no].len_emv ? isodef[no].len_emv! : isodef[no].len!;
     if (isodef[no].lenlen) {
       let lena = msg.substr(offset, isodef[no].lenlen*2);
       len = parseInt(lena.replace(/[fF]/g,''));
       len += isodef[no].lenlen;
     }
-    bmps[no] = msg.substr(offset, len*2);
+    parsedBmps[no] = msg.substr(offset, len*2);
     offset += len*2;
     return offset;
   }
@@ -212,6 +219,7 @@ export default function Home() {
     setHexValue(newValue);
     // Update message type from first 4 characters
     setMessageType(newValue.substring(0, 4).padEnd(4, '0'));
+    parse(newValue);
   };
 
   return (
