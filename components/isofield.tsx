@@ -1,6 +1,6 @@
-import TextField from '@mui/material/TextField';
 import React, { useState, useEffect } from 'react';
 import IsoTextField from './isotextfield';
+import { lenOf, buildLengthField } from '../pages/index';
 
 interface IsoFieldProps {
   def?: any;
@@ -46,10 +46,6 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
     let v = '';
     if (init) {
       v = init;
-      if (def && def.lenlen) {
-        // remove length field:
-        v = v.substr(def.lenlen * 2);
-      }
     }
     setVal(v);
     //emitVal(v);
@@ -60,16 +56,8 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
     return '00'.repeat(len());
   };
 
-  const lengthField = (val: string): string => {
-    if (!def || !def.lenlen) return '';
-    const fieldLen = val ? Math.round(val.length / 2) : 0;
-    const lens = ('' + (Math.pow(10, def.lenlen) + fieldLen)).substr(1);
-    return 'F' + lens.split('').join('F');
-  };
-
   const len = (): number => {
-    if (!def || !def.len) return 0;
-    return emv && def.len_emv ? def.len_emv : def.len;
+    return lenOf(no!, emv);
   };
 
   const valAlpha = (): string => {
@@ -77,9 +65,8 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
   };
 
   const emitVal = (v: string) => {
-    let e = lengthField(v) + v;
     if (onChange) {
-      onChange({ no: no!, val: e });
+      onChange({ no: no!, val: v });
     }
   };
 
@@ -139,7 +126,7 @@ export const IsoFieldComponent: React.FC<IsoFieldProps> = ({
       
       {def && def.lenlen && (
         <div className='flex flex-row gap-1 items-center'>
-          <div className='font-[monospace] text-sm'>{lengthField(_val)}</div>
+          <div className='font-[monospace] text-sm'>{buildLengthField(no!, _val)}</div>
           <IsoTextField variant='standard' 
             value={_val}
             onChange={handleChange}

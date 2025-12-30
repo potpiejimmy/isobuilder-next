@@ -57,6 +57,20 @@ export const isodef: Record<number, {label: string, lenlen?: number, len?: numbe
    128: {label:"MAC2", len:8}
 }
 
+export const lenOf = (no: number, emv: boolean): number => {
+  let def = isodef[no];
+  if (!def || !def.len) return 0;
+  return emv && def.len_emv ? def.len_emv : def.len;
+};
+
+export const buildLengthField = (no: number,val: string): string => {
+  let def = isodef[no];
+  if (!def || !def.lenlen) return '';
+  const fieldLen = val ? Math.round(val.length / 2) : 0;
+  const lens = ('' + (Math.pow(10, def.lenlen) + fieldLen)).substr(1);
+  return 'F' + lens.split('').join('F');
+};
+
 export default function Home() {
   const [hexValue, setHexValue] = useState('01000000000000000000');
   const [messageType, setMessageType] = useState('0100');
@@ -80,7 +94,7 @@ export default function Home() {
     for (let i in bmp) {
       res[bmp[i]-1-offset] = '1';
     }
-    return BigInt('0b1'+res.join("")).toString(16).substring(1);
+    return BigInt('0b1'+res.join("")).toString(16).substring(1).toUpperCase();
   }
 
   const hexToBitmap = (hex: string, offset=0) => {
@@ -92,12 +106,12 @@ export default function Home() {
     return bmp;
   }
 
-  const padField = (val: string, no: number): string => {
+  const buildField = (val: string, no: number): string => {
     let def = isodef[no];
-    let e = val || '';
+    let e = buildLengthField(no, val) + (val || '');
     if (e.length % 2) e += '0';
-    if (lenOf(no)) {
-       while (e.length < lenOf(no) * 2) e += '00';
+    if (lenOf(no, emv())) {
+       while (e.length < lenOf(no, emv()) * 2) e += '00';
     }
     return e;
   }
@@ -110,11 +124,11 @@ export default function Home() {
     res += bitmapToHex(currentBmp0);
     if (currentBmp0[0]==1) res += bitmapToHex(currentBmp1,64);
     for (let i in currentBmp0) {
-      if (currentBmp0[i]>1) res += padField(currentBmps[currentBmp0[i]],currentBmp0[i]);
+      if (currentBmp0[i]>1) res += buildField(currentBmps[currentBmp0[i]],currentBmp0[i]);
     }
     if (currentBmp0[0]==1) {
       for (let i in currentBmp1) {
-        res += padField(currentBmps[currentBmp1[i]],currentBmp1[i]);
+        res += buildField(currentBmps[currentBmp1[i]],currentBmp1[i]);
       }
     }
     setHexValue(res);
@@ -171,12 +185,6 @@ export default function Home() {
     offset += len*2;
     return offset;
   }
-
-  const lenOf = (no: number): number => {
-    let def = isodef[no];
-    if (!def || !def.len) return 0;
-    return emv() && def.len_emv ? def.len_emv : def.len;
-  };
 
   const bmpChange = (event: { no: number; val: string }) => {
     bmps[event.no] = event.val;
