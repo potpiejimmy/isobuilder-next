@@ -6,15 +6,7 @@ import IsoFieldComponent from '@/components/isofield';
 import HexTextField from '@/components/isotextfield';
 import { Alert } from '@mui/material';
 
-export default function Home() {
-  const [hexValue, setHexValue] = useState('01000000000000000000');
-  const [messageType, setMessageType] = useState('0100');
-  const [bmp0, setBmp0] = useState<number[]>([]);
-  const [bmp1, setBmp1] = useState<number[]>([]);
-  const [bmps, setBmps] = useState<Record<number,string>>({});
-  const [alert, setAlert] = useState<{severity: 'success' | 'info' | 'warning' | 'error', summary: string, detail: string} | null>(null);
-
-  const isodef: Record<number, {label: string, lenlen?: number, len?: number, len_emv?: number, alpha_emv?: boolean, alpha?: boolean}> = {
+export const isodef: Record<number, {label: string, lenlen?: number, len?: number, len_emv?: number, alpha_emv?: boolean, alpha?: boolean}> = {
      2: {label:"TRACK2PAN", lenlen:2},
      3: {label:"AKZ", len:3},
      4: {label:"AMOUNT", len:6},
@@ -63,7 +55,15 @@ export default function Home() {
     64: {label:"MAC", len:8},
    110: {label:"SECURITY DATA", lenlen:4},
    128: {label:"MAC2", len:8}
-  }
+}
+
+export default function Home() {
+  const [hexValue, setHexValue] = useState('01000000000000000000');
+  const [messageType, setMessageType] = useState('0100');
+  const [bmp0, setBmp0] = useState<number[]>([]);
+  const [bmp1, setBmp1] = useState<number[]>([]);
+  const [bmps, setBmps] = useState<Record<number,string>>({});
+  const [alert, setAlert] = useState<{severity: 'success' | 'info' | 'warning' | 'error', summary: string, detail: string} | null>(null);
 
   const fieldLabel = (no: number): string => {
     return isodef[no] ? isodef[no].label : '<unknown>';

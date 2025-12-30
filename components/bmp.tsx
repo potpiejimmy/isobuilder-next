@@ -1,3 +1,4 @@
+import { isodef } from '../pages/index';
 import React, { useState, useEffect } from 'react';
 
 interface BmpProps {
@@ -49,7 +50,7 @@ export const BmpComponent: React.FC<BmpProps> = ({
         <tr>
           {bitmap.map((i) => (
             <th key={`header-${i}`} className="align-bottom text-center text-[0.85em]">
-              <span className="[writing-mode:vertical-rl] rotate-180 whitespace-nowrap inline-block">{i}</span>
+              <span className={`[writing-mode:vertical-rl] rotate-180 whitespace-nowrap inline-block ${isodef[i]||i===1 ? '' : 'text-gray-400'}`}>{i}</span>
             </th>
           ))}
         </tr>
