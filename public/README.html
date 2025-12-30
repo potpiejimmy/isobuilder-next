@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISO 8583 Message Parser and Editor</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            max-width: 800px;
+            padding: 0 15px;
+            background: white;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #334bb6;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #764ba2;
+            margin-top: 30px;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .feature-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏦 ISO 8583 Message Parser and Editor</h1>
+    
+    <p>
+        A web-based tool for parsing, editing, and building ISO 8583 financial transaction messages.
+    </p>
+
+    <h2>🚀 Usage</h2>
+    
+    <h3>Getting Started</h3>
+    <ol>
+        <li>Paste your ISO 8583 message (in hexadecimal format) into the main text field</li>
+        <li>The application will automatically parse the message and display:
+            <ul>
+                <li>Message Type Indicator (MTI)</li>
+                <li>Bitmap visualization (both primary and secondary if present)</li>
+                <li>Individual data elements with their field numbers and labels</li>
+            </ul>
+        </li>
+        <li>Edit any field by clicking on it and modifying the value</li>
+        <li>Changes are reflected in real-time in the hex representation</li>
+    </ol>
+
+    <p style="margin-top: 20px;">
+        <a href="index.html" style="display: inline-block; background: #667eea; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold; transition: background 0.3s;">
+            START
+        </a>
+    </p>
+
+    <div class="info-box">
+        <strong>💡 Tip:</strong> When pasting into the hexadecimal representation, the application automatically detects whether your message is plain hexadecimal or 
+        ASCII text with &lt;0x...&gt; hexadecimal blocks and converts the ASCII parts to EBCDIC as needed. It also recognizes EMV-type transactions and adjusts field formats accordingly.
+    </div>
+
+    <h3>Sample Message</h3>
+    <p>Try pasting this sample ISO 8583 message to see the parser in action (click to select all):</p>
+    <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 0.85em; line-height: 1.4; white-space: pre-wrap; word-wrap: break-word; cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s;" onclick="window.getSelection().selectAllChildren(this);" onmouseover="this.style.borderColor='#667eea';" onmouseout="this.style.borderColor='transparent';"><code>&lt;0x0200703C46C0A0E01A89F1F06725902100325021973F310113000000001000000001205320122908126011050100016212F0F3221000F1F90123456789012345678D06122800123456789F&gt;00088891000000048050161WNI Heinz-Nixdorf-Ring 1&gt;PADERBORN   &gt;DE&lt;0x69209745C577F9DC0102110002000000F1F7F9DF0508F0F0F0F000F0FF009F19061234567890129F241D&gt;1A3B5C7D9E1F3G5H7I9K1A3B5C7D9&lt;0x9F2608DE661F890DC57BC59F2701809F1010018201003100001800000000000000009F37044902345C9F3602003C950580000480009A030409169C01015F2A020978820218009F1A0202809F34030203009F33036040209F3501149F1E08&gt;12345678d&lt;0x07A00000000410109F090200029F4104000000119F5301E9F0F3F401046072795A2B97A04B32CDF2B666329DB79C89709041924AC9818BB33B6013&gt; O007&lt;0x2007010100000082EB1035099A8B38&gt;</code></pre>
+
+    <h3>Supported Fields</h3>
+    <p>
+        The application supports all standard ISO 8583 fields including:
+    </p>
+    <ul>
+        <li><strong>Transaction fields:</strong> Amount, date/time, trace numbers</li>
+        <li><strong>Card data:</strong> PAN, track data, expiry date</li>
+        <li><strong>Terminal data:</strong> Merchant type, terminal ID, location</li>
+        <li><strong>Security:</strong> PIN data, MAC, CVV</li>
+        <li><strong>EMV data:</strong> ICC chip data (field 55 with TAG-LENGTH-VALUE parsing)</li>
+        <li><strong>Acquirer/Issuer data:</strong> Response codes, reference numbers, settlement data</li>
+    </ul>
+
+    <h2>🛠️ Technical Details</h2>
+    <p>
+        Built with Next.js and React, this application runs entirely in your browser for privacy and security. 
+        No data is sent to external servers.
+    </p>
+    <ul class="feature-list">
+        <li>Modern React-based UI with Material-UI components</li>
+        <li>Real-time field validation and formatting</li>
+        <li>EBCDIC to ASCII conversion utilities</li>
+        <li>Support for variable and fixed-length fields</li>
+        <li>Bitmap management with visual representation</li>
+    </ul>
+
+    <div class="footer">
+        <p>ISO 8583 Message Parser and Editor &copy; 2025 by Thorsten Liese</p>
+        <p>Built with Next.js | For development and testing purposes</p>
+    </div>
+</body>
+</html>
