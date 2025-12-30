@@ -179,7 +179,7 @@ export default function Home() {
     if (isodef[no].lenlen) {
       let lena = msg.substr(offset, isodef[no].lenlen*2);
       len = parseInt(lena.replace(/[fF]/g,''));
-      len += isodef[no].lenlen;
+      offset += isodef[no].lenlen * 2;
     }
     parsedBmps[no] = msg.substr(offset, len*2);
     offset += len*2;
